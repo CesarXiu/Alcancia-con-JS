@@ -1,59 +1,49 @@
+
 class moneybox{
+    //Solo recibe el nombre del dueño
     constructor(name) {
         this.name = name
-        //Creamos los atributos vacios que utilizaremos 
-        this.coin1 = null
-        this.coin2 = null
-        this.coin5 = null
-        this.coin10 = null
-        this.bill20 = null 
-        this.bill50 = null
-        this.bill100 = null
-        this.bill200 = null
-        this.bill500 = null
-        this.bill1000 = null
-        this.auxiliarValue = [this.coin1,this.coin2,this.coin5,this.coin10,this.bill20,this.bill50,this.bill100,this.bill200,this.bill500,this.bill1000]
-    }
-    currencyExists(value){
-        switch(value){ //Revisa si es que esta creado y si no crea el objeto
-            case 1:
-                return (this.coin1!=null)? this.coin1 : this.coin1 = new money(1, 0)
-            case 2:
-                return (this.coin2!=null)? this.coin2 : this.coin2 = new money(2, 0)
-            case 5:
-                return (this.coin5!=null)? this.coin5 : this.coin5 = new money(5, 0)
-            case 10:
-                return (this.coin10!=null)? this.coin10 : this.coin10 = new money(10, 0)
-            case 20:
-                return (this.bill20!=null)? this.bill20 : this.bill20 = new money(20, 0)
-            case 50:
-                return (this.bill50!=null)? this.bill50 : this.bill50 = new money(50, 0)
-            case 100:
-                return (this.bill100!=null)? this.bill100 : this.bill100 = new money(100, 0)
-            case 200:
-                return (this.bill200!=null)? this.bill200 : this.bill200 = new money(200, 0)
-            case 500:
-                return (this.bill500!=null)? this.bill500 : this.bill500 = new money(500, 0)
-            case 1000:
-                return (this.bill1000!=null)? this.bill1000 : this.bill1000 = new money(1000, 0)
-            default:
-                console.error('Value not valid.')
-                return null
+        this.allowedValues = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];//Guardamos un arreglo con los valores disponibles
+        this.auxiliarValue = new Array(this.allowedValues.length)//Utilizando el tamaño del arreglo anterior creamos otro arreglo de un tamaño especifico
+        for (let index = 0; index < this.allowedValues.length; index++) {//Segun el tamaño de los valores disponibles
+            this.auxiliarValue[index] = new money(this.allowedValues[index],0)//Al arreglo creado anteriormente vacio le agregamos objetos money
         }
     }
-    addMoney(value, quantity){
-        const myMoney = this.currencyExists(value) 
-        (myMoney != null)? myMoney.insertQuantity(quantity) : console.error('Not a valid currency')
-    }
-    getSavingByValue(value){
-        const myMoney = this.currencyExists(value) 
-        return (myMoney != null)? myMoney.getTotal() : null
-    }
-    getTotalOfSaving(){
-        const total = 0
-        for (const currency of this.auxiliarValue) { //Recorremos el auxiliar para obtener el total
-            total += (currency!=null)? currency.getTotal() : 0 //Revisamos si algun objeto es vacio
+    //Recibe copyauxiliar, que es un arreglo de 'objetos' money, donde solo usamos la cantidad guardada
+    refactor(copyAuxiliar){//Para poder normalizar/utilizar el objeto que guardamos en localstorage
+        for (let index = 0; index < this.allowedValues.length; index++) {//Segun el tamaño de valores disponibles
+            this.auxiliarValue[index] = new money(this.allowedValues[index],copyAuxiliar[index].quantity)//Vamos generando de manera correcta el arreglo auxiliar con las cantidades
         }
-        return total;
+    }
+    //Recibe el valor a buscar en formato entero y devuelve el objeto money que buscamos
+    currencyExists(value){//Para buscar la moneda de denominacion que necesitemos
+        return this.auxiliarValue.at(this.allowedValues.indexOf(value))//Utiliza el metodo indexof para encontrar la posicion en el arreglo de valores disponibles
+        //Para despues obtener el objeto que tenemos guardado en ese indice, ya que fue creado en conjunto ambos
+    }
+    //Recibe el valor al que se agregara una nueva cantidad
+    addMoney(value, quantity){//Para agregar una cantidad a una moneda/billete
+        const myMoney = this.currencyExists(value) //Utiliza el metodo currencyExist para encontrar el objeto que utilizaremos
+        if(myMoney != null){ //Revisa si el valor fue econtrado
+            myMoney.insertQuantity(quantity)//Si se encontro agregamos la cantidad utilizando un metodo de la clase money
+        }else{
+            console.error('Not a valid currency')//Si no existe ese valor imprime que no es valido
+        }
+    }
+    //Recibe el valor a obtener el total en formato entero y regresa el total
+    getSavingByValue(value){//Obtienes el ahorro de una nomina individual 
+        const myMoney = this.currencyExists(value) //Busca el objeto 
+        return (myMoney != null)? myMoney.getTotal() : null //Regresa el total mediante una funcion en money o regresa null si no existe
+    }
+    //Regresa el ahorro total hasta el momento
+    getTotalOfSaving(){//Para obtener todos los ahorros que tenemos actualmente
+        let total = 0//Utilizamos una variable para guardad el total
+        this.auxiliarValue.forEach((element, index, array) => {//Utilizamos una funciona para ir recorriendo al arreglo de monedas
+            total += element.getTotal()//Y vamos sumando en total en la variable que creamos, usando objeto por objeto
+        })
+        return total;//Regresamos la suma total de las divisas
+    }
+    //Regresa el nombre del propietario
+    getOwner(){
+        return this.name//Nombre del creador de la cuenta de ahorro
     }
 }
